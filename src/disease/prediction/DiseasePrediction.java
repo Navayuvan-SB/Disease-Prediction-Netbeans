@@ -99,7 +99,7 @@ public class DiseasePrediction {
 			}
 			t += 1;
 			h = 0;
-	}
+                }
 	int max = r[0],m = 0;
 	for(int i = 0;i < 10;i ++) {
 		if(r[i] > max) {

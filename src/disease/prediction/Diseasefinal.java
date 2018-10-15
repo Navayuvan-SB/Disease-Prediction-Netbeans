@@ -1,3 +1,4 @@
+
 package disease.prediction;
 
 import com.mysql.jdbc.PreparedStatement;
@@ -18,17 +19,22 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 
-interface Searchable<E, V>{
-	public Collection<E> search(V value);
-}
-
-public class gui {
+public class Diseasefinal {
     
     private JComboBox jComboBox1;
     private static Connection conn;
     private static JTextArea symptoms;
     private static JButton select;
-    public gui(){
+    private static JTextField firstnamet;
+    private static JTextField lastnamet;
+    private static JTextField aget;
+    private static JTextField gendert;
+    private static JButton submit;
+    
+    private static int[] sid = new int[100];
+    private static int n = 0;
+
+    public Diseasefinal(){
         try{
         getConnection();
         init();
@@ -43,7 +49,7 @@ public class gui {
 		System.out.println("Connected to MySql server");
 	}
     public static void main(String a[]) throws Exception{
-        gui g = new gui();
+        Diseasefinal g = new Diseasefinal();
     }
 
     
@@ -83,22 +89,22 @@ public class gui {
         genderl.setBounds(50,550,200,50);
         genderl.setText("Gender");
         
-        JTextField firstnamet = new JTextField();
+        firstnamet = new JTextField();
         firstnamet.setFont(new java.awt.Font("Calibri", 1, 20));
         firstnamet.setBounds(250,250,300,50);
         firstnamet.setText("");
         
-        JTextField lastnamet = new JTextField();
+        lastnamet = new JTextField();
         lastnamet.setFont(new java.awt.Font("Calibri", 1, 20));
         lastnamet.setBounds(250,350,300,50);
         lastnamet.setText("");
         
-        JTextField aget = new JTextField();
+        aget = new JTextField();
         aget.setFont(new java.awt.Font("Calibri", 1, 20));
         aget.setBounds(250,450,300,50);
         aget.setText("");
        
-        JTextField gendert = new JTextField();
+        gendert = new JTextField();
         gendert.setFont(new java.awt.Font("Calibri", 1, 20));
         gendert.setBounds(250,550,300,50);
         gendert.setText("");
@@ -114,15 +120,15 @@ public class gui {
         jComboBox1.setBounds(700,250,200,50);
         jframe.add(jComboBox1);
         
-        JTextArea symptoms = new JTextArea();
-        symptoms.setBounds(700,400,300,200);
+        symptoms = new JTextArea();
+        symptoms.setBounds(700,350,300,200);
         jframe.add(symptoms);
         
-        JButton select = new JButton();
-        select.setBounds(700,320,100,40);
-        select.setText("Select");
+        submit = new JButton();
+        submit.setBounds(700,590,100,40);
+        submit.setText("Submit");
         //select.addActionListener((ActionListener) this);
-        jframe.add(select);
+        jframe.add(submit);
         
         JTextField jtextfield = (JTextField) jComboBox1.getEditor().getEditorComponent();
         jtextfield.addKeyListener(new KeyAdapter(){
@@ -139,6 +145,27 @@ public class gui {
             }
         });
         
+        jtextfield.addKeyListener(new KeyAdapter(){
+            public void keyPressed(KeyEvent k){
+                if(k.getKeyCode() == KeyEvent.VK_ENTER){
+                    String text = jComboBox1.getSelectedItem().toString();
+                    symptoms.append(text + "\n");
+                    jtextfield.setText("");
+                }
+            }
+        });
+        
+        submit.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                
+                try {
+                    filterSym(symptoms);
+                    predict(sid,n);
+                } catch (SQLException ex) {
+                    Logger.getLogger(Diseasefinal.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
         
         jframe.add(headingl);
         jframe.add(heading2);
@@ -171,19 +198,102 @@ public class gui {
         }
 
         if (filterArray.size() > 0) {
-        jComboBox1.setModel(new DefaultComboBoxModel(filterArray.toArray()));
-        jComboBox1.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                symptoms.append(text + ", ");
-            }
-        });
-        jComboBox1.setSelectedItem(text);
-        jComboBox1.showPopup();
-    }
-    else {
+            jComboBox1.setModel(new DefaultComboBoxModel(filterArray.toArray()));
+            jComboBox1.setSelectedItem(text);
+            jComboBox1.showPopup();
+        }
+        else {
         jComboBox1.hidePopup();
+        }
     }
-          
     
-  }
-}
+    public static void predict(int[] v, int n) throws SQLException {
+		
+		PreparedStatement ps = (PreparedStatement) conn.prepareStatement("select * from main");
+		ResultSet rs = ps.executeQuery();
+		int[] a = new int [100];
+		int h = 0,t = 0;
+		int[] r = new int[100];
+		while(rs.next()) {
+			r[t] = 0;
+			StringTokenizer st2 = new StringTokenizer(rs.getString("sym"), ", ");
+			while (st2.hasMoreElements()) {
+				a[h]=Integer.parseInt(st2.nextToken());
+				h += 1;
+			}
+			for(int i = 1; i < n; i++) {
+				for(int j = 0; j <= h; j++) {
+					if(v[i] == a[j]) {
+						r[t] += 1;
+					}
+				}
+			}
+			t += 1;
+			h = 0;
+                }
+	int max = r[0],m = 0;
+	for(int i = 0;i < 10;i ++) {
+		if(r[i] > max) {
+			max = r[i];
+			m = i;
+		}
+	}
+	m = m + 1;
+	PreparedStatement ps1 = (PreparedStatement) conn.prepareStatement("select * from dname");
+	ResultSet rs1 = ps1.executeQuery();
+	while(rs1.next()) {
+		if(rs1.getInt("id") == m) {
+			//System.out.println(rs1.getString("dname"));
+                        
+                        JPanel jpanel = new JPanel();
+                        
+                        JLabel name = new JLabel();
+                        name.setText("Name: " + firstnamet.getText() + " " + lastnamet.getText());
+                        name.setFont(new java.awt.Font("Calibri", 1, 20));
+                        
+                        JLabel age = new JLabel();
+                        age.setText("Age: " + aget.getText());
+                        age.setFont(new java.awt.Font("Calibri", 1, 20));
+                        
+                        JLabel gender = new JLabel();
+                        gender.setText("Gender :" + gendert.getText());
+                        gender.setFont(new java.awt.Font("Calibri", 1, 20));
+                        
+                        JLabel dis = new JLabel();
+                        dis.setText("You may have '" + rs1.getString("dname") + "'");
+                        dis.setFont(new java.awt.Font("Calibri", 1, 28));
+                        dis.setForeground(new java.awt.Color(255, 0, 0));
+                        
+                        jpanel.add(name);
+                        jpanel.add(age);
+                        jpanel.add(gender);
+                        jpanel.add(dis);
+                        jpanel.setLayout(new BoxLayout(jpanel, BoxLayout.Y_AXIS));
+                        
+                        JOptionPane.showMessageDialog(null,jpanel,"Result",JOptionPane.WARNING_MESSAGE);
+		}
+	}
+    }
+    
+    public void filterSym(JTextArea symptoms) throws SQLException{
+        PreparedStatement ps = (PreparedStatement) conn.prepareStatement("select * from sname");
+	ResultSet rs = ps.executeQuery();
+        
+        while(rs.next()){
+            StringTokenizer st2 = new StringTokenizer(symptoms.getText().toString(), "\n");
+            while(st2.hasMoreElements()){
+                String str1 = rs.getString("sname").toString().trim();
+                String str2 = st2.nextToken().toString().trim();
+                
+                if(str1.equals(str2)){
+                    sid[n] = rs.getInt("id");
+                    n++;
+                }
+            }
+        }
+    }
+    
+    
+    
+}    
+
