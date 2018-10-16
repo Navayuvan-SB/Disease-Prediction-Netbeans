@@ -21,10 +21,9 @@ import javax.swing.text.JTextComponent;
 
 public class Diseasefinal {
     
-    private JComboBox jComboBox1;
+    private static JComboBox jComboBox1;
     private static Connection conn;
     private static JTextArea symptoms;
-    private static JButton select;
     private static JTextField firstnamet;
     private static JTextField lastnamet;
     private static JTextField aget;
@@ -120,8 +119,16 @@ public class Diseasefinal {
         jComboBox1.setBounds(700,250,200,50);
         jframe.add(jComboBox1);
         
+        JLabel selected = new JLabel();
+        selected.setText("Selected Symptoms");
+        selected.setFont(new java.awt.Font("Calibri", 1, 20));
+        selected.setBounds(700,300,200,50);
+        selected.setForeground(new java.awt.Color(255, 0, 0));
+        jframe.add(selected);
+        
         symptoms = new JTextArea();
         symptoms.setBounds(700,350,300,200);
+        symptoms.setFont(new java.awt.Font("Calibri", 1, 20));
         jframe.add(symptoms);
         
         submit = new JButton();
@@ -291,9 +298,6 @@ public class Diseasefinal {
                 }
             }
         }
-    }
-    
-    
-    
+    }   
 }    
 
